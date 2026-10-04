@@ -1,0 +1,89 @@
+// use prisma-8
+enum Role {
+  USER
+  ADMIN
+}
+
+enum PostStatus {
+  DRAFT
+  PUBLISHED
+  ARCHIVED
+}
+
+model User {
+  id        Int                  @id @default(autoincrement())
+  email     String               @unique
+  name      String
+  role      Role                 @default(USER)
+  profile   Profile?
+  posts     Post[]
+  comments  Comment[]
+  likes     Like[]
+  createdAt DateTime             @default(now())
+  updatedAt temporal.updatedAt()
+}
+
+model Profile {
+  id        Int     @id @default(autoincrement())
+  bio       String?
+  avatarUrl String?
+  user      User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId    Int     @unique
+}
+
+model Category {
+  id    Int    @id @default(autoincrement())
+  name  String @unique
+  posts Post[]
+}
+
+model Post {
+  id         Int                  @id @default(autoincrement())
+  title      String
+  content    String
+  status     PostStatus           @default(DRAFT)
+  author     User                 @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  authorId   Int
+  category   Category?            @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+  categoryId Int?
+  tags       PostTag[]
+  comments   Comment[]
+  likes      Like[]
+  createdAt  DateTime             @default(now())
+  updatedAt  temporal.updatedAt()
+}
+
+model Tag {
+  id    Int       @id @default(autoincrement())
+  name  String    @unique
+  posts PostTag[]
+}
+
+model PostTag {
+  post   Post @relation(fields: [postId], references: [id], onDelete: Cascade)
+  postId Int
+  tag    Tag  @relation(fields: [tagId], references: [id], onDelete: Cascade)
+  tagId  Int
+
+  @@id([postId, tagId])
+}
+
+model Comment {
+  id        Int      @id @default(autoincrement())
+  content   String
+  post      Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
+  postId    Int
+  author    User     @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  authorId  Int
+  createdAt DateTime @default(now())
+}
+
+model Like {
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId    Int
+  post      Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
+  postId    Int
+  createdAt DateTime @default(now())
+
+  @@id([userId, postId])
+}
