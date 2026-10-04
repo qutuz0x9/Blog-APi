@@ -154,53 +154,62 @@ curl -X POST http://localhost:3000/api/users \
 
 ## npm scripts
 
-Pass extra flags after `--`, for example `npm run migration:plan -- --name add_slug`.
+Run any script with `npm run <script>`. Pass extra flags after `--`, for example `npm run migration:plan -- --name add_slug`.
+
+Two Prisma ideas that come up below:
+
+- **Contract:** your schema file, `src/prisma/contract.prisma`. Prisma turns it into `contract.json` and `contract.d.ts`, which the app uses at runtime and for TypeScript types.
+- **Marker:** a small record Prisma keeps inside the database (in the `prisma_contract` schema) saying which version of your contract the database matches.
 
 ### App
 
-| Script | Description |
-|---|---|
-| `dev` | Start the server in watch mode |
-| `start` | Start the server |
-| `typecheck` | Type-check the project with `tsc` |
+| Script | Runs | What it does and when to use it |
+|---|---|---|
+| `dev` | `tsx watch src/index.ts` | Starts the server and restarts it every time you save a file. Use this while coding. |
+| `start` | `tsx src/index.ts` | Starts the server once, with no file watching. Use it when you just want the app running. |
+| `typecheck` | `tsc --noEmit` | Checks the whole project for TypeScript errors without building anything. Run it after changing the schema to find code that needs updating. |
 
 ### Contract (schema)
 
-| Script | Description |
-|---|---|
-| `contract:emit` | Regenerate `contract.json` and `contract.d.ts` from `contract.prisma` |
-| `contract:format` | Format `contract.prisma` |
-| `contract:print` | Print the schema the config loads |
-| `contract:infer` | Build a schema from an existing database |
+| Script | Runs | What it does and when to use it |
+|---|---|---|
+| `contract:emit` | `prisma contract emit` | Reads `contract.prisma` and regenerates `contract.json` and `contract.d.ts`. Run it after **every** schema edit, otherwise the app and its types still use the old schema. It does not touch the database. |
+| `contract:format` | `prisma contract format` | Re-indents and aligns `contract.prisma`. Purely cosmetic. |
+| `contract:print` | `prisma contract print` | Prints the schema exactly as Prisma reads it from `prisma.config.ts`. Useful to check what Prisma actually sees. |
+| `contract:infer` | `prisma contract infer` | Connects to an existing database and writes a schema that describes its tables. Use it when starting from a database that already exists, not for this project's normal workflow. |
 
 ### Database
 
-| Script | Description |
-|---|---|
-| `db:init` | Create all tables in an empty database |
-| `db:sync` | Emit the contract, then update the tables (quick local workflow) |
-| `db:update` | Update tables to match the contract |
-| `db:update:dry` | Preview `db:update` without applying it |
-| `db:migrate` | Apply planned migrations |
-| `db:migrate:show` | Preview which migrations would run |
-| `db:verify` | Check that the database matches the contract |
-| `db:sign` | Mark the database as matching the contract |
-| `db:schema` | Show the live database schema |
+All of these connect to the database in `DATABASE_URL`.
+
+| Script | Runs | What it does and when to use it |
+|---|---|---|
+| `db:init` | `prisma db init` | Creates every table from the contract in an **empty** database and writes the marker. Use it once on a fresh database. |
+| `db:sync` | `prisma contract emit && prisma db update` | Emits the contract, then changes the tables to match it. This is the quickest way to try a schema change locally. It creates no migration files, so don't use it for shared or production databases. |
+| `db:update` | `prisma db update` | Changes the tables to match the already-emitted contract, without creating migration files. If a change would delete data (for example dropping a column), it asks you to type the database name to confirm. |
+| `db:update:dry` | `prisma db update --dry-run` | Shows what `db:update` would change, without changing anything. Run it first if you're unsure. |
+| `db:migrate` | `prisma db migrate --advance-ref db` | Applies the migration files in `migrations/` that haven't run yet. They all run in one transaction, so if one fails, none are applied. It also updates the `db` ref (see Migrations), so the next `migration:plan` starts from the right place. Use it for shared and production databases. |
+| `db:migrate:show` | `prisma db migrate --show` | Lists which migrations `db:migrate` would run, without running them. |
+| `db:verify` | `prisma db verify` | Checks that the real tables and the marker both match your contract. Use it after migrating, or when something seems out of sync. |
+| `db:sign` | `prisma db sign` | Writes the marker for the current contract, after first checking that the tables really match. Use it after fixing the database by hand. It never changes tables. |
+| `db:schema` | `prisma db schema` | Prints the tables, columns and constraints that actually exist in the database right now. |
 
 ### Migrations
 
-| Script | Description |
-|---|---|
-| `migration:plan` | Emit the contract, then create a new migration |
-| `migration:new` | Create an empty migration to write by hand |
-| `migration:status` | Show pending migrations |
-| `migration:list` | List migrations on disk |
-| `migration:log` | Show migrations that have run |
-| `migration:graph` | Show the migration graph |
-| `migration:check` | Check migration files for problems |
-| `migration:show` | Show one migration's contents |
-| `migration:ref:list` | List refs |
-| `migration:ref:set` | Point a ref at a schema version |
+A migration is a folder in `migrations/app/` describing one schema change. Migrations are files, so you can commit them, review them, and replay them on other databases.
+
+| Script | Runs | What it does and when to use it |
+|---|---|---|
+| `migration:plan` | `prisma contract emit && prisma migration plan` | Emits the contract, compares it with the last known schema version, and writes a new migration folder. Name it with `-- --name <slug>`. Use it when a schema change is ready to keep. |
+| `migration:new` | `prisma migration new` | Creates an empty migration folder for writing a change by hand (for example a custom data fix). |
+| `migration:status` | `prisma migration status` | Shows which migrations are applied and which are still pending. |
+| `migration:list` | `prisma migration list` | Lists the migration folders on disk. |
+| `migration:log` | `prisma migration log` | Shows the history of migrations that have actually run on the database. |
+| `migration:graph` | `prisma migration graph` | Shows how the migrations connect to each other (each one goes from one schema version to the next). |
+| `migration:check` | `prisma migration check` | Checks that the migration files are intact, not edited by hand without being regenerated, and that refs point at real migrations. |
+| `migration:show` | `prisma migration show` | Shows the operations and SQL inside one migration. Pass the folder name: `npm run migration:show -- <folder>`. |
+| `migration:ref:list` | `prisma migration ref list` | Lists refs. A ref is a saved name pointing at a schema version. The `db` ref records which version your local database is at, so `migration:plan` knows where to start. |
+| `migration:ref:set` | `prisma migration ref set` | Points a ref at a schema version: `npm run migration:ref:set -- <name> <hash>`. Mostly used to fix a ref that points at the wrong version. |
 
 ## Changing the schema
 
