@@ -1,0 +1,646 @@
+openapi: 3.1.0
+info:
+  title: Blog API
+  version: 1.0.0
+  description: Simple blog REST API built with Express 5, Prisma ORM 8 and PostgreSQL.
+servers:
+  - url: http://localhost:3000
+    description: Local development
+
+tags:
+  - name: Health
+  - name: Users
+  - name: Categories
+  - name: Tags
+  - name: Posts
+  - name: Comments
+
+paths:
+  /health:
+    get:
+      tags: [Health]
+      summary: Health check
+      responses:
+        '200':
+          description: Server is running
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status: { type: string, example: ok }
+
+  # ---------- Users ----------
+  /api/users:
+    get:
+      tags: [Users]
+      summary: List users
+      responses:
+        '200':
+          description: All users ordered by id
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/User' }
+    post:
+      tags: [Users]
+      summary: Create a user
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/UserCreate' }
+      responses:
+        '201':
+          description: User created
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/User' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '409': { $ref: '#/components/responses/Conflict' }
+
+  /api/users/{id}:
+    parameters:
+      - $ref: '#/components/parameters/Id'
+    get:
+      tags: [Users]
+      summary: Get a user with profile and posts
+      responses:
+        '200':
+          description: The user
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/UserDetail' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '404': { $ref: '#/components/responses/NotFound' }
+    patch:
+      tags: [Users]
+      summary: Update a user
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/UserUpdate' }
+      responses:
+        '200':
+          description: Updated user
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/User' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+    delete:
+      tags: [Users]
+      summary: Delete a user (also deletes their profile, posts, comments and likes)
+      responses:
+        '204': { description: User deleted }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '404': { $ref: '#/components/responses/NotFound' }
+
+  /api/users/{id}/profile:
+    parameters:
+      - $ref: '#/components/parameters/Id'
+    put:
+      tags: [Users]
+      summary: Create or update a user's profile
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ProfileInput' }
+      responses:
+        '200':
+          description: Profile updated
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Profile' }
+        '201':
+          description: Profile created
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Profile' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+
+  # ---------- Categories ----------
+  /api/categories:
+    get:
+      tags: [Categories]
+      summary: List categories
+      responses:
+        '200':
+          description: All categories ordered by name
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/Category' }
+    post:
+      tags: [Categories]
+      summary: Create a category
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/NameInput' }
+      responses:
+        '201':
+          description: Category created
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Category' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '409': { $ref: '#/components/responses/Conflict' }
+
+  /api/categories/{id}:
+    parameters:
+      - $ref: '#/components/parameters/Id'
+    get:
+      tags: [Categories]
+      summary: Get a category with its posts
+      responses:
+        '200':
+          description: The category
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/Category'
+                  - type: object
+                    properties:
+                      posts:
+                        type: array
+                        items: { $ref: '#/components/schemas/Post' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '404': { $ref: '#/components/responses/NotFound' }
+    patch:
+      tags: [Categories]
+      summary: Rename a category
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/NameInput' }
+      responses:
+        '200':
+          description: Updated category
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Category' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+    delete:
+      tags: [Categories]
+      summary: Delete a category (its posts keep existing with no category)
+      responses:
+        '204': { description: Category deleted }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '404': { $ref: '#/components/responses/NotFound' }
+
+  # ---------- Tags ----------
+  /api/tags:
+    get:
+      tags: [Tags]
+      summary: List tags
+      responses:
+        '200':
+          description: All tags ordered by name
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/Tag' }
+    post:
+      tags: [Tags]
+      summary: Create a tag
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/NameInput' }
+      responses:
+        '201':
+          description: Tag created
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Tag' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '409': { $ref: '#/components/responses/Conflict' }
+
+  /api/tags/{id}:
+    parameters:
+      - $ref: '#/components/parameters/Id'
+    delete:
+      tags: [Tags]
+      summary: Delete a tag
+      responses:
+        '204': { description: Tag deleted }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '404': { $ref: '#/components/responses/NotFound' }
+
+  # ---------- Posts ----------
+  /api/posts:
+    get:
+      tags: [Posts]
+      summary: List posts (newest first, paginated)
+      parameters:
+        - name: page
+          in: query
+          schema: { type: integer, minimum: 1, default: 1 }
+        - name: limit
+          in: query
+          schema: { type: integer, minimum: 1, maximum: 100, default: 10 }
+      responses:
+        '200':
+          description: A page of posts
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  page: { type: integer, example: 1 }
+                  limit: { type: integer, example: 10 }
+                  data:
+                    type: array
+                    items: { $ref: '#/components/schemas/PostListItem' }
+    post:
+      tags: [Posts]
+      summary: Create a post
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/PostCreate' }
+      responses:
+        '201':
+          description: Post created
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Post' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+
+  /api/posts/{id}:
+    parameters:
+      - $ref: '#/components/parameters/Id'
+    get:
+      tags: [Posts]
+      summary: Get a post with author, category, tags, comments and likes
+      responses:
+        '200':
+          description: The post
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/PostDetail' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '404': { $ref: '#/components/responses/NotFound' }
+    patch:
+      tags: [Posts]
+      summary: Update a post
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/PostUpdate' }
+      responses:
+        '200':
+          description: Updated post
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Post' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '404': { $ref: '#/components/responses/NotFound' }
+    delete:
+      tags: [Posts]
+      summary: Delete a post
+      responses:
+        '204': { description: Post deleted }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '404': { $ref: '#/components/responses/NotFound' }
+
+  /api/posts/{id}/tags/{tagId}:
+    parameters:
+      - $ref: '#/components/parameters/Id'
+      - name: tagId
+        in: path
+        required: true
+        schema: { type: integer, minimum: 1 }
+    post:
+      tags: [Posts]
+      summary: Attach a tag to a post
+      responses:
+        '201':
+          description: Tag attached
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/PostTag' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '409': { $ref: '#/components/responses/Conflict' }
+    delete:
+      tags: [Posts]
+      summary: Remove a tag from a post
+      responses:
+        '204': { description: Tag removed }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '404': { $ref: '#/components/responses/NotFound' }
+
+  /api/posts/{id}/comments:
+    parameters:
+      - $ref: '#/components/parameters/Id'
+    post:
+      tags: [Posts]
+      summary: Add a comment to a post
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/CommentCreate' }
+      responses:
+        '201':
+          description: Comment created
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Comment' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+
+  /api/posts/{id}/likes:
+    parameters:
+      - $ref: '#/components/parameters/Id'
+    post:
+      tags: [Posts]
+      summary: Like a post
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [userId]
+              properties:
+                userId: { type: integer, example: 1 }
+      responses:
+        '201':
+          description: Like created
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Like' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '409': { $ref: '#/components/responses/Conflict' }
+
+  /api/posts/{id}/likes/{userId}:
+    parameters:
+      - $ref: '#/components/parameters/Id'
+      - name: userId
+        in: path
+        required: true
+        schema: { type: integer, minimum: 1 }
+    delete:
+      tags: [Posts]
+      summary: Remove a like
+      responses:
+        '204': { description: Like removed }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '404': { $ref: '#/components/responses/NotFound' }
+
+  # ---------- Comments ----------
+  /api/comments/{id}:
+    parameters:
+      - $ref: '#/components/parameters/Id'
+    patch:
+      tags: [Comments]
+      summary: Edit a comment
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [content]
+              properties:
+                content: { type: string, example: Updated comment }
+      responses:
+        '200':
+          description: Updated comment
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Comment' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '404': { $ref: '#/components/responses/NotFound' }
+    delete:
+      tags: [Comments]
+      summary: Delete a comment
+      responses:
+        '204': { description: Comment deleted }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '404': { $ref: '#/components/responses/NotFound' }
+
+components:
+  parameters:
+    Id:
+      name: id
+      in: path
+      required: true
+      schema: { type: integer, minimum: 1 }
+
+  responses:
+    BadRequest:
+      description: Invalid input, missing fields, or a referenced resource does not exist
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+    NotFound:
+      description: Resource not found
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+    Conflict:
+      description: Resource already exists (unique constraint)
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+
+  schemas:
+    Error:
+      type: object
+      properties:
+        error: { type: string, example: Post not found }
+
+    Role:
+      type: string
+      enum: [USER, ADMIN]
+
+    PostStatus:
+      type: string
+      enum: [DRAFT, PUBLISHED, ARCHIVED]
+
+    User:
+      type: object
+      properties:
+        id: { type: integer, example: 1 }
+        email: { type: string, format: email, example: ali@test.com }
+        name: { type: string, example: Ali }
+        role: { $ref: '#/components/schemas/Role' }
+        createdAt: { type: string, format: date-time }
+        updatedAt: { type: string, format: date-time }
+
+    UserDetail:
+      allOf:
+        - $ref: '#/components/schemas/User'
+        - type: object
+          properties:
+            profile:
+              oneOf:
+                - $ref: '#/components/schemas/Profile'
+                - type: 'null'
+            posts:
+              type: array
+              items: { $ref: '#/components/schemas/Post' }
+
+    UserCreate:
+      type: object
+      required: [email, name]
+      properties:
+        email: { type: string, format: email, example: ali@test.com }
+        name: { type: string, example: Ali }
+        role: { $ref: '#/components/schemas/Role' }
+
+    UserUpdate:
+      type: object
+      properties:
+        email: { type: string, format: email }
+        name: { type: string }
+        role: { $ref: '#/components/schemas/Role' }
+
+    Profile:
+      type: object
+      properties:
+        id: { type: integer, example: 1 }
+        bio: { type: [string, 'null'], example: Backend developer }
+        avatarUrl: { type: [string, 'null'], example: null }
+        userId: { type: integer, example: 1 }
+
+    ProfileInput:
+      type: object
+      properties:
+        bio: { type: string, example: Backend developer }
+        avatarUrl: { type: string, example: https://example.com/avatar.png }
+
+    NameInput:
+      type: object
+      required: [name]
+      properties:
+        name: { type: string, example: Docker }
+
+    Category:
+      type: object
+      properties:
+        id: { type: integer, example: 1 }
+        name: { type: string, example: Docker }
+
+    Tag:
+      type: object
+      properties:
+        id: { type: integer, example: 1 }
+        name: { type: string, example: devops }
+
+    Post:
+      type: object
+      properties:
+        id: { type: integer, example: 1 }
+        title: { type: string, example: Hello }
+        content: { type: string, example: World }
+        status: { $ref: '#/components/schemas/PostStatus' }
+        authorId: { type: integer, example: 1 }
+        categoryId: { type: [integer, 'null'], example: 1 }
+        createdAt: { type: string, format: date-time }
+        updatedAt: { type: string, format: date-time }
+
+    AuthorSummary:
+      type: object
+      properties:
+        id: { type: integer, example: 1 }
+        name: { type: string, example: Ali }
+
+    PostListItem:
+      allOf:
+        - $ref: '#/components/schemas/Post'
+        - type: object
+          properties:
+            author: { $ref: '#/components/schemas/AuthorSummary' }
+            category:
+              oneOf:
+                - $ref: '#/components/schemas/Category'
+                - type: 'null'
+
+    PostDetail:
+      allOf:
+        - $ref: '#/components/schemas/PostListItem'
+        - type: object
+          properties:
+            tags:
+              type: array
+              items:
+                allOf:
+                  - $ref: '#/components/schemas/PostTag'
+                  - type: object
+                    properties:
+                      tag: { $ref: '#/components/schemas/Tag' }
+            comments:
+              type: array
+              items:
+                allOf:
+                  - $ref: '#/components/schemas/Comment'
+                  - type: object
+                    properties:
+                      author: { $ref: '#/components/schemas/AuthorSummary' }
+            likes:
+              type: array
+              items: { $ref: '#/components/schemas/Like' }
+
+    PostCreate:
+      type: object
+      required: [title, content, authorId]
+      properties:
+        title: { type: string, example: Hello }
+        content: { type: string, example: World }
+        status: { $ref: '#/components/schemas/PostStatus' }
+        authorId: { type: integer, example: 1 }
+        categoryId: { type: [integer, 'null'], example: 1 }
+
+    PostUpdate:
+      type: object
+      properties:
+        title: { type: string }
+        content: { type: string }
+        status: { $ref: '#/components/schemas/PostStatus' }
+        categoryId: { type: [integer, 'null'] }
+
+    PostTag:
+      type: object
+      properties:
+        postId: { type: integer, example: 1 }
+        tagId: { type: integer, example: 1 }
+
+    Comment:
+      type: object
+      properties:
+        id: { type: integer, example: 1 }
+        content: { type: string, example: Nice post }
+        postId: { type: integer, example: 1 }
+        authorId: { type: integer, example: 1 }
+        createdAt: { type: string, format: date-time }
+
+    CommentCreate:
+      type: object
+      required: [content, authorId]
+      properties:
+        content: { type: string, example: Nice post }
+        authorId: { type: integer, example: 1 }
+
+    Like:
+      type: object
+      properties:
+        userId: { type: integer, example: 1 }
+        postId: { type: integer, example: 1 }
+        createdAt: { type: string, format: date-time }
