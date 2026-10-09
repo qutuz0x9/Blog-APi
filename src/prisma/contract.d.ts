@@ -34,7 +34,7 @@ import type {
 } from '@prisma/orm-postgres/contract/types';
 
 export type StorageHash =
-  StorageHashBase<'29a1922ef12aae4c914ed16b5f1226f08160931c8a515098d1f7a2d8b839e1db'>;
+  StorageHashBase<'b1baa254842fe043e49526ef0f8470ab5e9a28683d460e4ff1ce5c90175d5ef8'>;
 export type ExecutionHash =
   ExecutionHashBase<'4198b949cb2b64d481a85c83c486b947eb63234594706f21c1e1935c204ca4df'>;
 export type ProfileHash =
@@ -287,6 +287,7 @@ export type FieldOutputTypes = {
       readonly userId: CodecTypes['pg/int4@1']['output'];
     };
     readonly Tag: {
+      readonly createdAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
       readonly id: CodecTypes['pg/int4@1']['output'];
       readonly name: CodecTypes['pg/text@1']['output'];
     };
@@ -339,6 +340,7 @@ export type FieldInputTypes = {
       readonly userId: CodecTypes['pg/int4@1']['input'];
     };
     readonly Tag: {
+      readonly createdAt: CodecTypes['pg/timestamptz-temporal@1']['input'];
       readonly id: CodecTypes['pg/int4@1']['input'];
       readonly name: CodecTypes['pg/text@1']['input'];
     };
@@ -391,6 +393,7 @@ export type StorageColumnTypes = {
       readonly userId: CodecTypes['pg/int4@1']['output'];
     };
     readonly Tag: {
+      readonly createdAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
       readonly id: CodecTypes['pg/int4@1']['output'];
       readonly name: CodecTypes['pg/text@1']['output'];
     };
@@ -443,6 +446,7 @@ export type StorageColumnInputTypes = {
       readonly userId: CodecTypes['pg/int4@1']['input'];
     };
     readonly Tag: {
+      readonly createdAt: CodecTypes['pg/timestamptz-temporal@1']['input'];
       readonly id: CodecTypes['pg/int4@1']['input'];
       readonly name: CodecTypes['pg/text@1']['input'];
     };
@@ -514,6 +518,7 @@ export namespace Models {
     readonly [RelationKeys]?: 'user';
   };
   export type public_Tag = {
+    createdAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
     id: CodecTypes['pg/int4@1']['output'];
     name: CodecTypes['pg/text@1']['output'];
     posts: public_PostTag[];
@@ -923,6 +928,12 @@ type ContractBase = Omit<
             };
             readonly Tag: {
               columns: {
+                readonly createdAt: {
+                  readonly nativeType: 'timestamptz';
+                  readonly codecId: 'pg/timestamptz-temporal@1';
+                  readonly nullable: false;
+                  readonly default: { readonly kind: 'function'; readonly expression: 'now()' };
+                };
                 readonly id: {
                   readonly nativeType: 'int4';
                   readonly codecId: 'pg/int4@1';
@@ -1352,6 +1363,13 @@ type ContractBase = Omit<
           };
           readonly Tag: {
             readonly fields: {
+              readonly createdAt: {
+                readonly nullable: false;
+                readonly type: {
+                  readonly kind: 'scalar';
+                  readonly codecId: 'pg/timestamptz-temporal@1';
+                };
+              };
               readonly id: {
                 readonly nullable: false;
                 readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/int4@1' };
@@ -1378,6 +1396,7 @@ type ContractBase = Omit<
               readonly table: 'Tag';
               readonly namespaceId: 'public';
               readonly fields: {
+                readonly createdAt: { readonly column: 'createdAt' };
                 readonly id: { readonly column: 'id' };
                 readonly name: { readonly column: 'name' };
               };

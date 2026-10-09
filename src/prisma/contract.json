@@ -597,6 +597,13 @@
           },
           "Tag": {
             "fields": {
+              "createdAt": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/timestamptz-temporal@1",
+                  "kind": "scalar"
+                }
+              },
               "id": {
                 "nullable": false,
                 "type": {
@@ -631,6 +638,9 @@
             },
             "storage": {
               "fields": {
+                "createdAt": {
+                  "column": "createdAt"
+                },
                 "id": {
                   "column": "id"
                 },
@@ -1269,6 +1279,15 @@
             },
             "Tag": {
               "columns": {
+                "createdAt": {
+                  "codecId": "pg/timestamptz-temporal@1",
+                  "default": {
+                    "expression": "now()",
+                    "kind": "function"
+                  },
+                  "nativeType": "timestamptz",
+                  "nullable": false
+                },
                 "id": {
                   "codecId": "pg/int4@1",
                   "default": {
@@ -1395,7 +1414,7 @@
         "kind": "postgres-schema"
       }
     },
-    "storageHash": "29a1922ef12aae4c914ed16b5f1226f08160931c8a515098d1f7a2d8b839e1db"
+    "storageHash": "b1baa254842fe043e49526ef0f8470ab5e9a28683d460e4ff1ce5c90175d5ef8"
   },
   "execution": {
     "executionHash": "4198b949cb2b64d481a85c83c486b947eb63234594706f21c1e1935c204ca4df",
