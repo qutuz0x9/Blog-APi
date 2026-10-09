@@ -8,12 +8,14 @@ import tagsRouter from './routes/tags.js';
 import postsRouter from './routes/posts.js';
 import commentsRouter from './routes/comments.js';
 import { errorHandler, notFound } from './middleware/error-handler.js';
+import { requestLogger } from './middleware/request-logger.js';
 
 // OpenAPI spec lives at the project root; served as Swagger UI at /api-docs
 const openApiDocument = YAML.parse(readFileSync(new URL('../openapi.yaml', import.meta.url), 'utf8'));
 
 export const app = express();
 
+app.use(requestLogger);
 app.use(express.json());
 
 app.get('/health', (_req, res) => {
@@ -27,6 +29,7 @@ app.use('/api/categories', categoriesRouter);
 app.use('/api/tags', tagsRouter);
 app.use('/api/posts', postsRouter);
 app.use('/api/comments', commentsRouter);
+
 
 app.use(notFound);
 app.use(errorHandler);

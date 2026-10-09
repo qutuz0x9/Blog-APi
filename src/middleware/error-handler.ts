@@ -1,5 +1,6 @@
 import type { ErrorRequestHandler, RequestHandler } from 'express';
 import { HttpError } from '../utils/http-error.js';
+import { logger } from '../utils/logger.js';
 
 // PostgreSQL error codes: https://www.postgresql.org/docs/current/errcodes-appendix.html
 const PG_UNIQUE_VIOLATION = '23505';
@@ -15,7 +16,7 @@ export const notFound: RequestHandler = (req, res) => {
   res.status(404).json({ error: `Route ${req.method} ${req.originalUrl} not found` });
 };
 
-export const errorHandler: ErrorRequestHandler = (err, _req, res, _next) => {
+export const errorHandler: ErrorRequestHandler = (err, req, res, _next) => {
   if (err instanceof HttpError) {
     res.status(err.status).json({ error: err.message });
     return;
@@ -31,6 +32,6 @@ export const errorHandler: ErrorRequestHandler = (err, _req, res, _next) => {
     return;
   }
 
-  console.error(err);
+  logger.error(`Unhandled error on ${req.method} ${req.originalUrl}`, err);
   res.status(500).json({ error: 'Internal server error' });
 };
