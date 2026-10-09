@@ -1,0 +1,18 @@
+name: blog-staging
+
+services:
+  db:
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:5434:5432"   # only reachable from this machine
+    logging:
+      driver: json-file
+      options: { max-size: "10m", max-file: "3" }
+
+  app:
+    restart: unless-stopped
+    ports:
+      - "3001:3000"
+    logging:
+      driver: json-file
+      options: { max-size: "10m", max-file: "3" }

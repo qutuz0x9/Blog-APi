@@ -1,0 +1,26 @@
+name: blog-prod
+
+services:
+  db:
+    restart: unless-stopped      # no ports: the DB is unreachable from outside Docker
+    logging:
+      driver: json-file
+      options: { max-size: "10m", max-file: "3" }
+
+  app:
+    restart: unless-stopped
+    ports:
+      - "3002:3000"
+    read_only: true              # container filesystem is read-only
+    tmpfs:
+      - /tmp                     # ...except a throwaway /tmp
+    security_opt:
+      - no-new-privileges:true
+    deploy:
+      resources:
+        limits:
+          cpus: "1.0"
+          memory: 512M
+    logging:
+      driver: json-file
+      options: { max-size: "10m", max-file: "3" }

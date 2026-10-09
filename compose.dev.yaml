@@ -1,0 +1,39 @@
+name: blog-dev
+
+services:
+  db:
+    ports:
+      - "5433:5432"          # reach the DB from your machine (psql, Prisma CLI)
+
+  migrate:
+    build:
+      target: dev
+    volumes:
+      - ./migrations:/app/migrations   # new migrations show up without a rebuild
+
+  app:
+    build:
+      target: dev
+    command: npm run dev     # tsx watch: restarts when a file in src/ changes
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./src:/app/src       # edit on your machine, runs in the container
+
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    environment:
+      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL}
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD}
+    ports:
+      - "8080:80"
+    depends_on:
+      db:
+        condition: service_healthy
+    volumes:
+      - pgadmin-data:/var/lib/pgadmin
+    networks:
+      - backend
+
+volumes:
+  pgadmin-data:
