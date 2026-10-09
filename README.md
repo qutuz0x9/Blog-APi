@@ -18,6 +18,8 @@ A simple blog REST API built with **Express 5**, **Prisma ORM 8**, **TypeScript*
 ```text
 .
 ├── openapi.yaml               # API spec (served as Swagger UI)
+├── Dockerfile                 # Multi-stage image (build + production)
+├── docker-compose.yml         # db + migrate + app
 ├── prisma.config.ts           # Prisma CLI config (contract path + DATABASE_URL)
 ├── migrations/                # Prisma migrations and refs (generated)
 └── src/
@@ -101,13 +103,37 @@ npm run db:seed
 
 ```bash
 npm run dev     # auto-restarts on file changes
-# or
-npm start
+# or, production style:
+npm run build && npm start
 ```
 
 - API: http://localhost:3000/api
 - Swagger docs: http://localhost:3000/api-docs
 - Health check: http://localhost:3000/health
+
+## Run with Docker
+
+Starts PostgreSQL, applies migrations, and runs the API on http://localhost:3000. No `.env` is needed.
+
+New to Docker? See [DOCKER.md](DOCKER.md) for a full explanation of the images, services and commands.
+
+```bash
+docker compose up -d --build                       # build images and start everything
+docker compose exec app node dist/prisma/seed.js   # optional: add sample data
+docker compose logs -f app                         # follow app logs
+docker compose down                                # stop (data is kept)
+docker compose down -v                             # stop and delete the database data
+```
+
+| Service | What it does |
+|---|---|
+| `db` | PostgreSQL 17. Data is stored in the `db-data` volume. Its port isn't published to your machine. |
+| `migrate` | One-off job: runs `prisma db migrate`, then exits. Runs after `db` is healthy. |
+| `app` | The compiled API (`node dist/index.js`) on port 3000. Starts only after `migrate` succeeds. |
+
+The `Dockerfile` has two stages:
+- **`build`** installs all dependencies and compiles TypeScript. The `migrate` service uses it, because the Prisma CLI is a dev dependency.
+- **`production`** has only production dependencies and the compiled `dist/`, and runs as the non-root `node` user.
 
 ## API endpoints
 
@@ -173,7 +199,8 @@ Two Prisma ideas that come up below:
 | Script | Runs | What it does and when to use it |
 |---|---|---|
 | `dev` | `tsx watch src/index.ts` | Starts the server and restarts it every time you save a file. Use this while coding. |
-| `start` | `tsx src/index.ts` | Starts the server once, with no file watching. Use it when you just want the app running. |
+| `build` | `tsc` | Compiles `src/` to JavaScript in `dist/`. Needed before `start`. |
+| `start` | `node dist/index.js` | Runs the compiled server (production style). Run `npm run build` first. |
 | `typecheck` | `tsc --noEmit` | Checks the whole project for TypeScript errors without building anything. Run it after changing the schema to find code that needs updating. |
 
 ### Contract (schema)
