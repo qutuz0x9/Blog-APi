@@ -1,5 +1,6 @@
 import { readFileSync } from 'node:fs';
 import express from 'express';
+import type { Request, Response } from 'express';
 import swaggerUi from 'swagger-ui-express';
 import YAML from 'yaml';
 import usersRouter from './routes/users.js';
@@ -21,7 +22,6 @@ app.use(express.json());
 app.get('/health', (_req, res) => {
   res.json({ status: 'ok' });
 });
-
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(openApiDocument));
 
 app.use('/api/users', usersRouter);
