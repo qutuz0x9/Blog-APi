@@ -2,12 +2,12 @@ import { readFileSync } from 'node:fs';
 import express from 'express';
 import swaggerUi from 'swagger-ui-express';
 import YAML from 'yaml';
-import usersRouter from './routes/users';
-import categoriesRouter from './routes/categories';
-import tagsRouter from './routes/tags';
-import postsRouter from './routes/posts';
-import commentsRouter from './routes/comments';
-import { errorHandler, notFound } from './middleware/error-handler';
+import usersRouter from './routes/users.js';
+import categoriesRouter from './routes/categories.js';
+import tagsRouter from './routes/tags.js';
+import postsRouter from './routes/posts.js';
+import commentsRouter from './routes/comments.js';
+import { errorHandler, notFound } from './middleware/error-handler.js';
 
 // OpenAPI spec lives at the project root; served as Swagger UI at /api-docs
 const openApiDocument = YAML.parse(readFileSync(new URL('../openapi.yaml', import.meta.url), 'utf8'));

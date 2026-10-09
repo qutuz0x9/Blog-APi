@@ -1,6 +1,6 @@
 import { Router } from 'express';
-import { db } from '../prisma/db';
-import { HttpError, parseId, requireFields } from '../utils/http-error';
+import { db } from '../prisma/db.js';
+import { HttpError, parseId, requireFields } from '../utils/http-error.js';
 
 const router = Router();
 const Category = db.orm.public.Category;

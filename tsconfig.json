@@ -1,8 +1,8 @@
 {
   "compilerOptions": {
     "target": "ES2022",
-    "module": "preserve",
-    "moduleResolution": "bundler",
+    "module": "nodenext",
+    "moduleResolution": "nodenext",
     "resolveJsonModule": true,
     "types": [
       "node"
@@ -10,9 +10,10 @@
     "strict": true,
     "skipLibCheck": true,
     "esModuleInterop": true,
+    "rootDir": "src",
     "outDir": "dist"
   },
   "include": [
-    "**/*.ts"
+    "src/**/*.ts"
   ]
 }

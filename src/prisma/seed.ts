@@ -1,6 +1,6 @@
 // Fills the database with sample data. Run with `npm run db:seed`.
 // WARNING: deletes all existing rows first, so only run it against a dev database.
-import { db } from './db';
+import { db } from './db.js';
 
 // Small seeded random generator so every run produces the same data
 let seed = 42;
