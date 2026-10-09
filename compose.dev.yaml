@@ -8,8 +8,13 @@ services:
   migrate:
     build:
       target: dev
+    user: node               # files it writes into the mounted folders stay owned by you (uid 1000)
+    # --advance-ref db moves the "db" ref to the version the dev DB is now at,
+    # so the next `npm run migration:plan` starts from the right place
+    command: npx prisma db migrate --advance-ref db
     volumes:
       - ./migrations:/app/migrations   # new migrations show up without a rebuild
+      - ./src:/app/src                 # migrate must read the CURRENT contract.json, not the image's old copy
 
   app:
     build:
