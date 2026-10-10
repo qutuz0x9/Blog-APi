@@ -3,3 +3,4 @@
 !.env.dev
 node_modules/
 dist/
+tmux-*.log
