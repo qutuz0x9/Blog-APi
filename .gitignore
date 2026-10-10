@@ -1,6 +1,7 @@
 .env*
 !.env.example
 !.env.dev
+!.env.test
 node_modules/
 dist/
 tmux-*.log

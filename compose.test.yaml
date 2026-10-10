@@ -1,0 +1,20 @@
+# Standalone (not layered on compose.yaml): just a throwaway Postgres for the route tests.
+# The app itself runs inside the test process, so no app/migrate containers are needed.
+name: blog-test
+
+services:
+  db:
+    image: postgres:18
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:?set POSTGRES_USER in .env.test}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD in .env.test}
+      POSTGRES_DB: ${POSTGRES_DB:?set POSTGRES_DB in .env.test}
+    ports:
+      - "5434:5432" # dev uses 5433, so both can run together
+    tmpfs:
+      - /var/lib/postgresql # data lives in RAM: every `up` starts empty
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      interval: 2s
+      timeout: 5s
+      retries: 15

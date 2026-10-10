@@ -50,7 +50,13 @@
     "docker:prod:logs": "npm run -s docker:prod -- logs -f app",
     "docker:prod:sh": "npm run -s docker:prod -- exec app sh",
     "docker:prod:psql": "npm run -s docker:prod -- exec db sh -c 'psql -U \"$POSTGRES_USER\" -d \"$POSTGRES_DB\"'",
-    "postinstall": "prisma skills sync || exit 0"
+    "postinstall": "prisma skills sync || exit 0",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:db:psql": "docker compose --env-file .env.test -f compose.test.yaml exec db sh -c 'psql -U \"$POSTGRES_USER\" -d \"$POSTGRES_DB\"'",
+    "test:db:up": "docker compose --env-file .env.test -f compose.test.yaml up -d --wait && set -a && . ./.env.test && set +a && DATABASE_URL=postgresql://$POSTGRES_USER:$POSTGRES_PASSWORD@localhost:5434/$POSTGRES_DB prisma db migrate > /dev/null",
+    "test:db:down": "docker compose --env-file .env.test -f compose.test.yaml down",
+    "test:db": "npm run -s test:db:up && set -a && . ./.env.test && set +a && TEST_DATABASE_URL=postgresql://$POSTGRES_USER:$POSTGRES_PASSWORD@localhost:5434/$POSTGRES_DB vitest run; code=$?; npm run -s test:db:down; exit $code"
   },
   "keywords": [],
   "type": "module",
@@ -67,8 +73,10 @@
     "@types/express": "^5.0.6",
     "@types/node": "^26.6.4",
     "@types/swagger-ui-express": "^4.1.8",
+    "prettier": "^3.9.10",
     "prisma": "8.0.0-rc.19",
     "tsx": "^4.23.15",
-    "typescript": "^7.0.2"
+    "typescript": "^7.0.2",
+    "vitest": "^5.0.3"
   }
 }
