@@ -2,9 +2,27 @@ name: Application CI
 on:
   push:
     branches: ["main"]
+env:
+  # Throwaway database: only exists for the duration of this job
+  TEST_DATABASE_URL: postgresql://test_user:test_password@localhost:5432/blog_test
 jobs:
   test:
     runs-on: ubuntu-latest
+    services:
+      db:
+        image: postgres:18
+        env:
+          POSTGRES_USER: test_user
+          POSTGRES_PASSWORD: test_password
+          POSTGRES_DB: blog_test
+        ports:
+          - 5432:5432
+        # Wait until Postgres accepts connections before the steps start
+        options: >-
+          --health-cmd "pg_isready -U test_user -d blog_test"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
     steps:
       - name: Checkout Repo
         uses: actions/checkout@v4
@@ -14,5 +32,9 @@ jobs:
           node-version: 24
       - name: Install Dependencies
         run: npm ci
+      - name: Apply Migrations
+        run: npx prisma db migrate
+        env:
+          DATABASE_URL: ${{ env.TEST_DATABASE_URL }}
       - name: Run Tests
         run: npm test
