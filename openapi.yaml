@@ -5,7 +5,11 @@ info:
   description: Simple blog REST API built with Express 5, Prisma ORM 8 and PostgreSQL.
 servers:
   - url: http://localhost:3000
-    description: Local development
+    description: Dev (docker compose, compose.dev.yaml)
+  - url: http://localhost:3001
+    description: Staging (docker compose, compose.staging.yaml)
+  - url: http://localhost:3002
+    description: Prod (docker compose, compose.prod.yaml)
 
 tags:
   - name: Health
