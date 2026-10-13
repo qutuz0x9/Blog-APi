@@ -50,7 +50,6 @@
     "docker:prod:logs": "npm run -s docker:prod -- logs -f app",
     "docker:prod:sh": "npm run -s docker:prod -- exec app sh",
     "docker:prod:psql": "npm run -s docker:prod -- exec db sh -c 'psql -U \"$POSTGRES_USER\" -d \"$POSTGRES_DB\"'",
-    "postinstall": "prisma skills sync || exit 0",
     "test": "vitest run",
     "test:watch": "vitest",
     "test:db:psql": "docker compose --env-file .env.test -f compose.test.yaml exec db sh -c 'psql -U \"$POSTGRES_USER\" -d \"$POSTGRES_DB\"'",
