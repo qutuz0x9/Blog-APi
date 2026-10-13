@@ -642,6 +642,13 @@
                   "kind": "scalar"
                 }
               },
+              "updatedAt": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/timestamptz-temporal@1",
+                  "kind": "scalar"
+                }
+              },
               "userId": {
                 "nullable": false,
                 "type": {
@@ -678,6 +685,9 @@
                 },
                 "id": {
                   "column": "id"
+                },
+                "updatedAt": {
+                  "column": "updatedAt"
                 },
                 "userId": {
                   "column": "userId"
@@ -1407,6 +1417,11 @@
                   "nativeType": "int4",
                   "nullable": false
                 },
+                "updatedAt": {
+                  "codecId": "pg/timestamptz-temporal@1",
+                  "nativeType": "timestamptz",
+                  "nullable": false
+                },
                 "userId": {
                   "codecId": "pg/int4@1",
                   "nativeType": "int4",
@@ -1583,10 +1598,10 @@
         "kind": "postgres-schema"
       }
     },
-    "storageHash": "60a1aaedf83a9dfbb48dfd8c20c039f546bd6e85651ed5e414db397bd6373852"
+    "storageHash": "d77942f96352790fa81fa546e3c6a5e724f6c48d25c8232f58372f1fe587f74d"
   },
   "execution": {
-    "executionHash": "4198b949cb2b64d481a85c83c486b947eb63234594706f21c1e1935c204ca4df",
+    "executionHash": "bcae4b958bdbf9ee06dd4788b128db4863aa9b2b9565ba0558ded5bdf281fb46",
     "mutations": {
       "defaults": [
         {
@@ -1600,6 +1615,21 @@
           },
           "ref": {
             "entry": "Post",
+            "field": "updatedAt",
+            "namespace": "public"
+          }
+        },
+        {
+          "onCreate": {
+            "id": "instantNow",
+            "kind": "generator"
+          },
+          "onUpdate": {
+            "id": "instantNow",
+            "kind": "generator"
+          },
+          "ref": {
+            "entry": "Profile",
             "field": "updatedAt",
             "namespace": "public"
           }

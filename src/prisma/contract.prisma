@@ -29,6 +29,7 @@ model Profile {
   avatarUrl String?
   user      User    @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId    Int     @unique
+  updatedAt temporal.updatedAt()
 }
 
 model Category {
