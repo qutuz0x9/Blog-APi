@@ -2,6 +2,13 @@ name: Application CI
 on:
   push:
     branches: ["main"]
+    paths-ignore:
+      - "README.md"
+      - "LICENSE"
+  pull_request:
+    types: [opened, synchronize, reopened, closed]
+    branches: ["main"]
+  workflow_dispatch:
 env:
   # Throwaway database: only exists for the duration of this job
   TEST_DATABASE_URL: postgresql://test_user:test_password@localhost:5432/blog_test
